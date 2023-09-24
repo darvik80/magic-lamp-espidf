@@ -1,0 +1,6 @@
+[submodule "libs"]
+	path = libs/darvik
+	url = https://github.com/darvik80/esp-idf-components.git
+[submodule "3pl-libs"]
+	path = libs/3pl-libs
+	url = git@github.com:espressif/idf-extra-components.git

@@ -1,0 +1,22 @@
+{
+  "wifi": [
+    {
+      "ssid": "A12A-08",
+      "password": "66778899"
+    },
+    {
+      "ssid": "alibaba-guest",
+      "password": ""
+    }
+  ],
+  "mqtt": [
+    {
+      "type": "local",
+      "uri": "mqtt://media-vn.local",
+      "username": "mqtt",
+      "password": "mqtt",
+      "device-name": "magic-lamp",
+      "product-name": "darvik-home"
+    }
+  ]
+}
