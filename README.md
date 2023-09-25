@@ -3,4 +3,4 @@
 
 # Magic Lamp
 ## Schema
-![image](docs/esp32c3.png)
+![image](docs/esp32c3s.png)
