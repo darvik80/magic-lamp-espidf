@@ -2,13 +2,13 @@
 | ----------------- |----------|
 
 # Magic Lamp
-## Schema
+## Scheme
 ![image](docs/esp32c3s.png)
 
 ## Demo
-![image](docs/witch.jpg)
----
 ![image](docs/red.jpg)
+---
+![image](docs/witch.jpg)
 ---
 ![image](docs/house.jpg)
 
