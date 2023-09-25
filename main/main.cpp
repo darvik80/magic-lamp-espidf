@@ -23,9 +23,9 @@ public:
 };
 
 class StubGenerator : public MagicGenerator {
-    LedColor  _color;
+    LedColor _color{.red = 0xFF, .green = 0x87, .blue = 0x00};
 public:
-    explicit StubGenerator(const LedColor&  color = {}) : MagicGenerator(1000), _color(color) {
+    explicit StubGenerator(const LedColor &color = {}) : MagicGenerator(1000), _color(color) {
     }
 
     void generate(LedStrip &ledStrip) override {
@@ -84,7 +84,7 @@ class MagicLampApplication
     std::vector<MagicGenerator *> _generators;
 public:
     MagicLampApplication() {
-        _generators.emplace_back(new StubGenerator());
+        _generators.emplace_back(new StubGenerator(LedColor{.red=0x8b, .green= 0x10, .blue=0x00}));
         _generators.emplace_back(new RainbowGenerator());
         _generators.emplace_back(new SingleColorGenerator(LedColor{.red=255, .green = 0, .blue = 0}));
         _generators.emplace_back(new SingleColorGenerator(LedColor{.red=0, .green = 255, .blue = 0}));
@@ -97,29 +97,36 @@ public:
         getRegistry().create<TelemetryService>();
         getRegistry().create<WifiService>();
         auto &mqtt = getRegistry().create<MqttService>();
-        mqtt.addJsonHandler<MagicActionEvent>("/user/action", MQTT_SUB_RELATIVE);
-        mqtt.addJsonHandler<MagicActionEvent>("/action", MQTT_SUB_BROADCAST);
+        mqtt.addJsonHandler<MagicActionEvent>("/action", MQTT_SUB_RELATIVE);
         mqtt.addJsonProcessor<SystemEventChanged>("/telemetry");
         mqtt.addJsonProcessor<Telemetry>("/telemetry");
-        //getRegistry().create<UartConsoleService>();
         getRegistry().create<IrReceiver>((gpio_num_t) 10);
 
         LedStrip &led1 = getRegistry().create<LedStripService<Service_App_LedStatus, 3, 4>>();
-        led1.setColor(0, 1, LedColor{.red=0xff, .green= 0x00, .blue=0x00});
-        led1.setColor(2, 3, LedColor{.red=0x00, .green= 0x00, .blue=0x00});
+        led1.setColor(0, 3, LedColor{.red=0x01, .green= 0x00, .blue=0x00});
         led1.refresh();
 
         LedStrip &led2 = getRegistry().create<LedStripService<Service_App_LedCircle, 2, 12>>();
-        led2.setColor(0, 11, LedColor{.red=0x00, .green= 0xff, .blue=0x00});
+        led2.setColor(0, 11, LedColor{.red=0x8b, .green= 0x10, .blue=0x00});
         led2.refresh();
+
     }
 
     void onEvent(const MagicActionEvent &action) {
-        esp_logi(app, "pin: %d, action: %d", action.pin, action.id);
+        esp_logi(
+                app, "pin: %d, action: %d, color: %02x%02x%02x",
+                action.pin, action.id,
+                action.color.red, action.color.green, action.color.blue
+        );
         if (action.id == 0) {
             _timer.detach();
             LedStrip *led = getRegistry().getService<LedStripService<Service_App_LedCircle, 2, 12>>();
             led->setColor(0, 11, action.color);
+            led->refresh();
+        } else if (action.id == 9) {
+            _timer.detach();
+            LedStrip *led = getRegistry().getService<LedStripService<Service_App_LedStatus, 3, 4>>();
+            led->setColor(0, 3, action.color);
             led->refresh();
         } else if (action.id < _generators.size()) {
             _genId = action.id;
@@ -165,27 +172,27 @@ public:
     }
 
     void onEvent(const SystemEventChanged &msg) {
-        LedStrip *led = getRegistry().getService<LedStripService<Service_App_LedStatus, 3, 4>>();
-        if (led) {
-            switch (msg.status) {
-                case SystemStatus::Wifi_Connected:
-                    led->setColor(0, 0, 0x00, 0xff, 0x00);
-                    break;
-                case SystemStatus::Wifi_Disconnected:
-                    led->setColor(0, 0, 0xff, 0x00, 0x00);
-                    break;
-                case SystemStatus::Mqtt_Connected:
-                    led->setColor(1, 1, 0x00, 0xff, 0x00);
-                    break;
-                case SystemStatus::Mqtt_Disconnected:
-                    led->setColor(1, 1, 0xff, 0x00, 0x00);
-                    break;
-                default:
-                    break;
-            }
-
-            led->refresh();
-        }
+//        LedStrip *led = getRegistry().getService<LedStripService<Service_App_LedStatus, 3, 4>>();
+//        if (led) {
+//            switch (msg.status) {
+//                case SystemStatus::Wifi_Connected:
+//                    led->setColor(0, 0, 0x00, 0xff, 0x00);
+//                    break;
+//                case SystemStatus::Wifi_Disconnected:
+//                    led->setColor(0, 0, 0xff, 0x00, 0x00);
+//                    break;
+//                case SystemStatus::Mqtt_Connected:
+//                    led->setColor(1, 1, 0x00, 0xff, 0x00);
+//                    break;
+//                case SystemStatus::Mqtt_Disconnected:
+//                    led->setColor(1, 1, 0xff, 0x00, 0x00);
+//                    break;
+//                default:
+//                    break;
+//            }
+//
+//            led->refresh();
+//        }
     }
 };
 

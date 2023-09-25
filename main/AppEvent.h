@@ -35,8 +35,11 @@ inline void fromJson(const cJSON *json, MagicActionEvent &action) {
             action.id = (uint16_t) item->valuedouble;
         } else if (!strcmp(item->string, "pin") && item->type == cJSON_Number) {
             action.pin = (uint16_t) item->valuedouble;
-        } else if (!strcmp(item->string, "color") && item->type == cJSON_Number) {
-            sscanf(item->valuestring, "%2" SCNu8 "%2" SCNu8 "%2" SCNu8 , & action.color.red, & action.color.green, & action.color.blue);
+        } else if (!strcmp(item->string, "color") && item->type == cJSON_String) {
+            sscanf(
+                    item->valuestring, "%2x%2x%2x",
+                    &action.color.red, &action.color.green, &action.color.blue
+            );
         }
 
         item = item->next;
