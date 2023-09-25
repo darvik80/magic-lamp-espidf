@@ -3,18 +3,13 @@
 //
 
 #pragma once
-#include <led_strip.h>
-#include <core/Logger.h>
-#include <core/Registry.h>
-#include "AppConfig.h"
+#include "led_strip.h"
+#include "core/Logger.h"
+#include "core/Registry.h"
+#include "../AppConfig.h"
+#include "LedColor.h"
 
 #define LED_STRIP_RMT_RES_HZ  (10 * 1000 * 1000)
-
-struct LedColor {
-    uint8_t red;
-    uint8_t green;
-    uint8_t blue;
-};
 
 class LedStrip : public Service {
     Registry &_registry;

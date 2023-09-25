@@ -1,23 +1,14 @@
 #include <core/Application.h>
 #include <nvs_flash.h>
-#include "LedStripService.h"
+#include "led/LedStripService.h"
 #include <core/Timer.h>
 #include <driver/gpio.h>
 
 #include "AppEvent.h"
-#include "IrReceiver.h"
+#include "ir/IrReceiver.h"
 #include "core/system/wifi/WifiService.h"
 #include "core/system/mqtt/MqttService.h"
 #include "core/system/telemetry/TelemetryService.h"
-
-#ifdef CONFIG_IDF_TARGET_ESP32S3
-#define LED_STRIP_PIN 48
-#define LED_STRIP_SIZE 1
-#else
-#define LED_STRIP_PIN 8
-#define LED_STRIP_SIZE 1
-#endif
-
 
 class MagicGenerator {
     uint32_t _delay;
@@ -31,14 +22,15 @@ public:
     virtual void generate(LedStrip &ledStrip) = 0;
 };
 
-class OffGenerator : public MagicGenerator {
+class StubGenerator : public MagicGenerator {
+    LedColor  _color;
 public:
-    OffGenerator() : MagicGenerator(1000) {
+    explicit StubGenerator(const LedColor&  color = {}) : MagicGenerator(1000), _color(color) {
     }
 
     void generate(LedStrip &ledStrip) override {
         for (size_t idx = 0; idx < ledStrip.getNumOfPins(); idx++) {
-            ledStrip.setColor(idx, idx, LedColor{0, 0, 0});
+            ledStrip.setColor(idx, idx, _color);
         }
 
         ledStrip.refresh();
@@ -86,13 +78,13 @@ public:
 
 class MagicLampApplication
         : public Application<MagicLampApplication>,
-          public TEventSubscriber<MagicLampApplication, SystemEventChanged, MagicActionEvent, TimerEvent<AppTid_MagicLamp>, Command, IrReceiverEvent> {
+          public TEventSubscriber<MagicLampApplication, SystemEventChanged, MagicActionEvent, TimerEvent<AppTid_MagicLamp>, IrReceiverEvent> {
     EspTimer _timer{"led-timer"};
     size_t _genId = 1;
     std::vector<MagicGenerator *> _generators;
 public:
     MagicLampApplication() {
-        _generators.emplace_back(new OffGenerator());
+        _generators.emplace_back(new StubGenerator());
         _generators.emplace_back(new RainbowGenerator());
         _generators.emplace_back(new SingleColorGenerator(LedColor{.red=255, .green = 0, .blue = 0}));
         _generators.emplace_back(new SingleColorGenerator(LedColor{.red=0, .green = 255, .blue = 0}));
@@ -107,8 +99,8 @@ public:
         auto &mqtt = getRegistry().create<MqttService>();
         mqtt.addJsonHandler<MagicActionEvent>("/user/action", MQTT_SUB_RELATIVE);
         mqtt.addJsonHandler<MagicActionEvent>("/action", MQTT_SUB_BROADCAST);
-        mqtt.addJsonProcessor<SystemEventChanged>("/user/telemetry");
-        mqtt.addJsonProcessor<Telemetry>("/user/telemetry");
+        mqtt.addJsonProcessor<SystemEventChanged>("/telemetry");
+        mqtt.addJsonProcessor<Telemetry>("/telemetry");
         //getRegistry().create<UartConsoleService>();
         getRegistry().create<IrReceiver>((gpio_num_t) 10);
 
@@ -124,7 +116,12 @@ public:
 
     void onEvent(const MagicActionEvent &action) {
         esp_logi(app, "pin: %d, action: %d", action.pin, action.id);
-        if (action.id < _generators.size()) {
+        if (action.id == 0) {
+            _timer.detach();
+            LedStrip *led = getRegistry().getService<LedStripService<Service_App_LedCircle, 2, 12>>();
+            led->setColor(0, 11, action.color);
+            led->refresh();
+        } else if (action.id < _generators.size()) {
             _genId = action.id;
             _timer.fire<AppTid_MagicLamp>(_generators[_genId]->getDelay(), true);
         }
@@ -190,34 +187,6 @@ public:
             led->refresh();
         }
     }
-
-    void onEvent(const Command &msg) {
-        esp_logi(app, "handle cmd: [%s] [%s]", msg.cmd, msg.params);
-//#ifdef  CONFIG_BT_ENABLED
-//        if (strcasecmp(msg.cmd, "bt") == 0) {
-//            if (strcasecmp(msg.params, "scan") == 0) {
-//                esp_logi(app, "handle req scan");
-//                BTGapDiscoveryRequest req{};
-//                getRegistry().getEventBus().send(req);
-//            }
-//        } else if (strcasecmp(msg.cmd, "bthid") == 0) {
-//            if (strncasecmp(msg.params, "conn", 4) == 0 && strlen(msg.params) > 5) {
-//                esp_logi(app, "handle hid req conn: %s", msg.params);
-//                BTHidConnRequest req{};
-//                req.bdAddr.assign(msg.params + 5);
-//                getRegistry().getEventBus().send(req);
-//            }
-//        } else if (strcasecmp(msg.cmd, "btspp") == 0) {
-//            if (strncasecmp(msg.params, "conn", 4) == 0 && strlen(msg.params) > 5) {
-//                esp_logi(app, "handle spp req conn: %s", msg.params);
-//                BTSppConnRequest req{};
-//                req.bdAddr.assign(msg.params + 5);
-//                getRegistry().getEventBus().send(req);
-//            }
-//        }
-//#endif
-    }
-
 };
 
 extern "C" void app_main() {

@@ -3,7 +3,7 @@
 //
 
 #include "IrReceiver.h"
-#include "AppEvent.h"
+#include "../AppEvent.h"
 
 static bool rmtRxDoneCallback(rmt_channel_handle_t channel, const rmt_rx_done_event_data_t *edata, void *user_data) {
     BaseType_t high_task_wakeup = pdFALSE;

@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include <core/Registry.h>
-#include "AppConfig.h"
+#include "core/Registry.h"
+#include "../AppConfig.h"
 #include <driver/rmt_rx.h>
 
 class IrReceiver : public TService<IrReceiver, Service_App_IrReceiver> {
