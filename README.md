@@ -3,14 +3,14 @@
 
 # Magic Lamp
 ## Scheme
-![image](docs/esp32c3s.png)
+![image](https://raw.githubusercontent.com/darvik80/magic-lamp-espidf/master/docs/esp32c3s.png)
 
 ## Demo
-![image](docs/red.jpg)
+![image](https://github.com/darvik80/magic-lamp-espidf/raw/master/docs/red.jpg)
 ---
-![image](docs/witch.jpg)
+![image](https://github.com/darvik80/magic-lamp-espidf/raw/master/docs/witch.jpg)
 ---
-![image](docs/house.jpg)
+![image](https://github.com/darvik80/magic-lamp-espidf/raw/master/docs/house.jpg)
 
 ## MQTT Control Messages
 
