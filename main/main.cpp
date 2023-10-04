@@ -172,27 +172,27 @@ public:
     }
 
     void onEvent(const SystemEventChanged &msg) {
-//        LedStrip *led = getRegistry().getService<LedStripService<Service_App_LedStatus, 3, 4>>();
-//        if (led) {
-//            switch (msg.status) {
-//                case SystemStatus::Wifi_Connected:
-//                    led->setColor(0, 0, 0x00, 0xff, 0x00);
-//                    break;
-//                case SystemStatus::Wifi_Disconnected:
-//                    led->setColor(0, 0, 0xff, 0x00, 0x00);
-//                    break;
-//                case SystemStatus::Mqtt_Connected:
-//                    led->setColor(1, 1, 0x00, 0xff, 0x00);
-//                    break;
-//                case SystemStatus::Mqtt_Disconnected:
-//                    led->setColor(1, 1, 0xff, 0x00, 0x00);
-//                    break;
-//                default:
-//                    break;
-//            }
-//
-//            led->refresh();
-//        }
+        LedStrip *led = getRegistry().getService<LedStripService<Service_App_LedStatus, 3, 4>>();
+        if (led) {
+            switch (msg.status) {
+                case SystemStatus::Wifi_Connected:
+                    led->setColor(0, 0, 0x00, 0xff, 0x00);
+                    break;
+                case SystemStatus::Wifi_Disconnected:
+                    led->setColor(0, 0, 0xff, 0x00, 0x00);
+                    break;
+                case SystemStatus::Mqtt_Connected:
+                    led->setColor(1, 1, 0x00, 0xff, 0x00);
+                    break;
+                case SystemStatus::Mqtt_Disconnected:
+                    led->setColor(1, 1, 0xff, 0x00, 0x00);
+                    break;
+                default:
+                    break;
+            }
+
+            led->refresh();
+        }
     }
 };
 
