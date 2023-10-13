@@ -9,6 +9,7 @@
 #include "core/system/wifi/WifiService.h"
 #include "core/system/mqtt/MqttService.h"
 #include "core/system/telemetry/TelemetryService.h"
+#include "core/system/storage/NvsStorage.h"
 
 class MagicGenerator {
     uint32_t _delay;
@@ -94,6 +95,7 @@ public:
     void userSetup() override {
         getRegistry().getEventBus().subscribe(shared_from_this());
 
+        getRegistry().create<NvsStorage>();
         getRegistry().create<TelemetryService>();
         getRegistry().create<WifiService>();
         auto &mqtt = getRegistry().create<MqttService>();

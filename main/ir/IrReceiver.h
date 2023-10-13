@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include "core/Registry.h"
+#include "core/Core.h"
 #include "AppConfig.h"
 #include <driver/rmt_rx.h>
 
-class IrReceiver : public TService<IrReceiver, Service_App_IrReceiver> {
+class IrReceiver : public TService<IrReceiver, Service_App_IrReceiver, Sys_User> {
     TaskHandle_t _taskHandle{nullptr};
     rmt_channel_handle_t _rxChan{nullptr};
 public:
