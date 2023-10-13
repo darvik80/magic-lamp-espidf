@@ -205,9 +205,7 @@ extern "C" void app_main() {
     auto app = std::make_shared<MagicLampApplication>();
     app->setup();
 
-    while (true) {
-        vTaskDelay(pdMS_TO_TICKS(100));
-    }
+    app->process();
 
     app->destroy();
 }
