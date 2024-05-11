@@ -100,16 +100,18 @@ public:
         getRegistry().create<OtaService>();
         getRegistry().create<TelemetryService>();
         auto &mqtt = getRegistry().create<MqttService>();
+        mqtt.addJsonHandler<OtaUpdate>("/ota", MQTT_SUB_RELATIVE);
         mqtt.addJsonHandler<MagicActionEvent>("/action", MQTT_SUB_RELATIVE);
         mqtt.addJsonProcessor<SystemEventChanged>("/telemetry");
         mqtt.addJsonProcessor<Telemetry>("/telemetry");
+
         getRegistry().create<IrReceiver>((gpio_num_t) 10);
 
-        LedStrip &led1 = getRegistry().create<LedStripService<Service_App_LedStatus, 3, 4>>();
+        auto &led1 = getRegistry().create<LedStripService<Service_App_LedStatus, 3, 4>>();
         led1.setColor(0, 3, LedColor{.red=0x01, .green= 0x00, .blue=0x00});
         led1.refresh();
 
-        LedStrip &led2 = getRegistry().create<LedStripService<Service_App_LedCircle, 2, 12>>();
+        auto &led2 = getRegistry().create<LedStripService<Service_App_LedCircle, 2, 12>>();
         led2.setColor(0, 11, LedColor{.red=0x8b, .green= 0x10, .blue=0x00});
         led2.refresh();
     }

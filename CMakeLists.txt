@@ -9,6 +9,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-field-initializers")
 
 list(APPEND EXTRA_COMPONENT_DIRS libs/darvik)
 list(APPEND EXTRA_COMPONENT_DIRS libs/3pl-libs/led_strip)
+list(APPEND EXTRA_COMPONENT_DIRS libs/3pl-libs/fmt)
 
 project(magic-lamp-espidf)
 
