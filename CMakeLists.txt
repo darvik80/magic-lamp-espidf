@@ -7,7 +7,7 @@ include_directories(
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-field-initializers")
 
-list(APPEND EXTRA_COMPONENT_DIRS libs/darvik/core-esp32)
+list(APPEND EXTRA_COMPONENT_DIRS libs/darvik)
 list(APPEND EXTRA_COMPONENT_DIRS libs/3pl-libs/led_strip)
 
 project(magic-lamp-espidf)

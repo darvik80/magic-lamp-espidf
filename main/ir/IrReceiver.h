@@ -15,5 +15,9 @@ public:
     void rxCallback();
 public:
     explicit IrReceiver(Registry &registry, gpio_num_t pin);
+
+    [[nodiscard]] std::string_view getServiceName() const override {
+        return "ir-r";
+    }
     ~IrReceiver() override;
 };

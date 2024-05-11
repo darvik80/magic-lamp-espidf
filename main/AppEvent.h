@@ -22,7 +22,7 @@ enum AppEventId {
     EvtId_IrReceiver,
 };
 
-struct MagicActionEvent : TEvent<EvtId_MagicAction, Sys_User> {
+struct MagicActionEvent : TMessage<EvtId_MagicAction, Sys_User> {
     uint16_t pin{0};
     uint16_t id{0};
     LedColor color{};
@@ -46,7 +46,7 @@ inline void fromJson(const cJSON *json, MagicActionEvent &action) {
     }
 }
 
-struct IrReceiverEvent : TEvent<EvtId_IrReceiver, Sys_User> {
+struct IrReceiverEvent : TMessage<EvtId_IrReceiver, Sys_User> {
     uint16_t addr;
     uint16_t cmd;
     bool repeat;

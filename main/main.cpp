@@ -8,15 +8,15 @@
 #include "ir/IrReceiver.h"
 #include "core/system/wifi/WifiService.h"
 #include "core/system/mqtt/MqttService.h"
+#include "core/system/ota/OtaService.h"
 #include "core/system/telemetry/TelemetryService.h"
-#include "core/system/storage/NvsStorage.h"
 
 class MagicGenerator {
     uint32_t _delay;
 public:
     explicit MagicGenerator(uint32_t delay) : _delay(delay) {}
 
-    uint32_t getDelay() const {
+    [[nodiscard]] uint32_t getDelay() const {
         return _delay;
     }
 
@@ -79,7 +79,7 @@ public:
 
 class MagicLampApplication
         : public Application<MagicLampApplication>,
-          public TEventSubscriber<MagicLampApplication, SystemEventChanged, MagicActionEvent, TimerEvent<AppTid_MagicLamp>, IrReceiverEvent> {
+          public TMessageSubscriber<MagicLampApplication, SystemEventChanged, MagicActionEvent, TimerEvent<AppTid_MagicLamp>, IrReceiverEvent> {
     EspTimer _timer{"led-timer"};
     size_t _genId = 1;
     std::vector<MagicGenerator *> _generators;
@@ -90,14 +90,15 @@ public:
         _generators.emplace_back(new SingleColorGenerator(LedColor{.red=255, .green = 0, .blue = 0}));
         _generators.emplace_back(new SingleColorGenerator(LedColor{.red=0, .green = 255, .blue = 0}));
         _generators.emplace_back(new SingleColorGenerator(LedColor{.red=0, .green = 0, .blue = 255}));
+        _generators.emplace_back(new SingleColorGenerator(LedColor{.red=0, .green = 0, .blue = 0}));
     }
 
     void userSetup() override {
         getRegistry().getEventBus().subscribe(shared_from_this());
 
-        getRegistry().create<NvsStorage>();
-        getRegistry().create<TelemetryService>();
         getRegistry().create<WifiService>();
+        getRegistry().create<OtaService>();
+        getRegistry().create<TelemetryService>();
         auto &mqtt = getRegistry().create<MqttService>();
         mqtt.addJsonHandler<MagicActionEvent>("/action", MQTT_SUB_RELATIVE);
         mqtt.addJsonProcessor<SystemEventChanged>("/telemetry");
@@ -111,10 +112,9 @@ public:
         LedStrip &led2 = getRegistry().create<LedStripService<Service_App_LedCircle, 2, 12>>();
         led2.setColor(0, 11, LedColor{.red=0x8b, .green= 0x10, .blue=0x00});
         led2.refresh();
-
     }
 
-    void onEvent(const MagicActionEvent &action) {
+    void handle(const MagicActionEvent &action) {
         esp_logi(
                 app, "pin: %d, action: %d, color: %02x%02x%02x",
                 action.pin, action.id,
@@ -122,12 +122,12 @@ public:
         );
         if (action.id == 0) {
             _timer.detach();
-            LedStrip *led = getRegistry().getService<LedStripService<Service_App_LedCircle, 2, 12>>();
+            auto *led = getRegistry().getService<LedStripService<Service_App_LedCircle, 2, 12>>();
             led->setColor(0, 11, action.color);
             led->refresh();
         } else if (action.id == 9) {
             _timer.detach();
-            LedStrip *led = getRegistry().getService<LedStripService<Service_App_LedStatus, 3, 4>>();
+            auto *led = getRegistry().getService<LedStripService<Service_App_LedStatus, 3, 4>>();
             led->setColor(0, 3, action.color);
             led->refresh();
         } else if (action.id < _generators.size()) {
@@ -136,7 +136,7 @@ public:
         }
     }
 
-    void onEvent(const IrReceiverEvent &event) {
+    void handle(const IrReceiverEvent &event) {
         esp_logi(app, "ir-recv: addr: 0x%0x, cmd: 0x%0x", event.addr, event.cmd);
         switch (event.cmd) {
             case 0xad52:
@@ -154,26 +154,42 @@ public:
             case 0xf30c:
                 _genId = 4;
                 break;
+            case 0xe718:
+                _genId = 5;
+                break;
+            case 0xbf40:
+                _genId = 128;
+                break;
             default:
                 return;
         }
 
         esp_logi(app, "ir-recv: action: %d", _genId);
+        if (_genId == 128) {
+            _timer.detach();
+            LedStrip *led = getRegistry().getService<LedStripService<Service_App_LedCircle, 2, 12>>();
+            led->setColor(0, 11, LedColor{0, 0, 0});
+            led->refresh();
+            led = getRegistry().getService<LedStripService<Service_App_LedStatus, 3, 4>>();
+            led->setColor(0, 3, LedColor{0, 0, 0});
+            led->refresh();
+        } else {
+            LedStrip *led = getRegistry().getService<LedStripService<Service_App_LedCircle, 2, 12>>();
+            if (led) {
+                _generators[_genId]->generate(*led);
+            }
+            _timer.fire<AppTid_MagicLamp>(_generators[_genId]->getDelay(), true);
+        }
+    }
+
+    void handle(const TimerEvent<AppTid_MagicLamp> &) {
         LedStrip *led = getRegistry().getService<LedStripService<Service_App_LedCircle, 2, 12>>();
         if (led) {
             _generators[_genId]->generate(*led);
         }
-        _timer.fire<AppTid_MagicLamp>(_generators[_genId]->getDelay(), true);
     }
 
-    void onEvent(const TimerEvent<AppTid_MagicLamp> &) {
-        LedStrip *led = getRegistry().getService<LedStripService<Service_App_LedCircle, 2, 12>>();
-        if (led) {
-            _generators[_genId]->generate(*led);
-        }
-    }
-
-    void onEvent(const SystemEventChanged &msg) {
+    void handle(const SystemEventChanged &msg) {
         LedStrip *led = getRegistry().getService<LedStripService<Service_App_LedStatus, 3, 4>>();
         if (led) {
             switch (msg.status) {
@@ -196,16 +212,15 @@ public:
             led->refresh();
         }
     }
+
 };
+
+static std::shared_ptr<MagicLampApplication> app;
 
 extern "C" void app_main() {
     esp_logi(mon, "\tfree-heap: %lu", esp_get_free_heap_size());
     esp_logi(mon, "\tstack-watermark: %d", uxTaskGetStackHighWaterMark(nullptr));
 
-    auto app = std::make_shared<MagicLampApplication>();
+    app = std::make_shared<MagicLampApplication>();
     app->setup();
-
-    app->process();
-
-    app->destroy();
 }

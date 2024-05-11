@@ -12,15 +12,7 @@
   "mqtt": [
     {
       "type": "local",
-      "uri": "mqtt://media-vn.local",
-      "username": "mqtt",
-      "password": "mqtt",
-      "device-name": "magic-lamp",
-      "product-name": "darvik-home"
-    },
-    {
-      "type": "local",
-      "uri": "mqtt://media-vn.local",
+      "uri": "mqtt://darvik.synology.me",
       "username": "mqtt",
       "password": "mqtt",
       "device-name": "magic-lamp",
