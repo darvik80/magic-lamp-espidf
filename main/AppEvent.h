@@ -6,7 +6,6 @@
 #pragma once
 
 #include <core/EventBus.h>
-#include <optional>
 #include "led/LedColor.h"
 
 extern "C" {
@@ -37,8 +36,8 @@ inline void fromJson(const cJSON *json, MagicActionEvent &action) {
             action.pin = (uint16_t) item->valuedouble;
         } else if (!strcmp(item->string, "color") && item->type == cJSON_String) {
             sscanf(
-                    item->valuestring, "%2x%2x%2x",
-                    &action.color.red, &action.color.green, &action.color.blue
+                item->valuestring, "%2" SCNu8 "x%2" SCNu8 "x%2" SCNu8 "x",
+                &action.color.red, &action.color.green, &action.color.blue
             );
         }
 

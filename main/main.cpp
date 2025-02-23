@@ -1,5 +1,4 @@
 #include <core/Application.h>
-#include <nvs_flash.h>
 #include "led/LedStripService.h"
 #include <core/Timer.h>
 #include <driver/gpio.h>
@@ -21,9 +20,11 @@ public:
     }
 
     virtual void generate(LedStrip &ledStrip) = 0;
+
+    virtual ~MagicGenerator() = default;
 };
 
-class StubGenerator : public MagicGenerator {
+class final StubGenerator : public MagicGenerator {
     LedColor _color{.red = 0xFF, .green = 0x87, .blue = 0x00};
 public:
     explicit StubGenerator(const LedColor &color = {}) : MagicGenerator(1000), _color(color) {
@@ -38,7 +39,7 @@ public:
     }
 };
 
-class SingleColorGenerator : public MagicGenerator {
+class final SingleColorGenerator : public MagicGenerator {
     LedColor _color;
 public:
     explicit SingleColorGenerator(const LedColor &color) : MagicGenerator(1000), _color(color) {
@@ -52,7 +53,7 @@ public:
 };
 
 
-class RainbowGenerator : public MagicGenerator {
+class final RainbowGenerator : public MagicGenerator {
     size_t _offset{0};
     std::array<LedColor, 4> _shape{};
 public:
@@ -107,11 +108,11 @@ public:
 
         getRegistry().create<IrReceiver>((gpio_num_t) 10);
 
-        auto &led1 = getRegistry().create<LedStripService<Service_App_LedStatus, 3, 4>>();
+        auto &led1 = getRegistry().create<LedStripService<Service_App_LedStatus, GPIO_NUM_3, 4>>();
         led1.setColor(0, 3, LedColor{.red=0x01, .green= 0x00, .blue=0x00});
         led1.refresh();
 
-        auto &led2 = getRegistry().create<LedStripService<Service_App_LedCircle, 2, 12>>();
+        auto &led2 = getRegistry().create<LedStripService<Service_App_LedCircle, GPIO_NUM_2, 12>>();
         led2.setColor(0, 11, LedColor{.red=0x8b, .green= 0x10, .blue=0x00});
         led2.refresh();
     }
@@ -124,12 +125,12 @@ public:
         );
         if (action.id == 0) {
             _timer.detach();
-            auto *led = getRegistry().getService<LedStripService<Service_App_LedCircle, 2, 12>>();
+            auto *led = getRegistry().getService<LedStripService<Service_App_LedCircle, GPIO_NUM_2, 12>>();
             led->setColor(0, 11, action.color);
             led->refresh();
         } else if (action.id == 9) {
             _timer.detach();
-            auto *led = getRegistry().getService<LedStripService<Service_App_LedStatus, 3, 4>>();
+            auto *led = getRegistry().getService<LedStripService<Service_App_LedStatus, GPIO_NUM_3, 4>>();
             led->setColor(0, 3, action.color);
             led->refresh();
         } else if (action.id < _generators.size()) {
@@ -169,14 +170,14 @@ public:
         esp_logi(app, "ir-recv: action: %d", _genId);
         if (_genId == 128) {
             _timer.detach();
-            LedStrip *led = getRegistry().getService<LedStripService<Service_App_LedCircle, 2, 12>>();
+            LedStrip *led = getRegistry().getService<LedStripService<Service_App_LedCircle, GPIO_NUM_2, 12>>();
             led->setColor(0, 11, LedColor{0, 0, 0});
             led->refresh();
-            led = getRegistry().getService<LedStripService<Service_App_LedStatus, 3, 4>>();
+            led = getRegistry().getService<LedStripService<Service_App_LedStatus, GPIO_NUM_3, 4>>();
             led->setColor(0, 3, LedColor{0, 0, 0});
             led->refresh();
         } else {
-            LedStrip *led = getRegistry().getService<LedStripService<Service_App_LedCircle, 2, 12>>();
+            LedStrip *led = getRegistry().getService<LedStripService<Service_App_LedCircle, GPIO_NUM_2, 12>>();
             if (led) {
                 _generators[_genId]->generate(*led);
             }
@@ -185,14 +186,14 @@ public:
     }
 
     void handle(const TimerEvent<AppTid_MagicLamp> &) {
-        LedStrip *led = getRegistry().getService<LedStripService<Service_App_LedCircle, 2, 12>>();
+        LedStrip *led = getRegistry().getService<LedStripService<Service_App_LedCircle, GPIO_NUM_2, 12>>();
         if (led) {
             _generators[_genId]->generate(*led);
         }
     }
 
     void handle(const SystemEventChanged &msg) {
-        LedStrip *led = getRegistry().getService<LedStripService<Service_App_LedStatus, 3, 4>>();
+        LedStrip *led = getRegistry().getService<LedStripService<Service_App_LedStatus, GPIO_NUM_3, 4>>();
         if (led) {
             switch (msg.status) {
                 case SystemStatus::Wifi_Connected:

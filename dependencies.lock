@@ -1,9 +1,57 @@
 dependencies:
+  core-esp32:
+    component_hash: d22a1df7f6257f282c68cff0fe7cf3e75d4415bbb9c273bf8820a9b05ac5c647
+    dependencies:
+    - name: idf
+      version: '>=5.0'
+    - name: espressif/fmt
+      version: ^10.1.0~1
+    source:
+      git: git@github.com:darvik80/esp-idf-components.git
+      path: core-esp32
+      type: git
+    version: 38f738c8a4fbd0707821eb07ae4233f8163d04ca
+  espressif/fmt:
+    component_hash: 05c74b1a3769a20be6fdaccab7e99af8d86bd7fbb2f1fd0a256b165de0f73e88
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=4.1'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 10.1.0~1
+  espressif/led_strip:
+    component_hash: f907c58f722c58ab8545366668cfd8769cefb7d97a631a14e9d16234cc72bdff
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=5.0'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 3.0.0
   idf:
-    component_hash: null
     source:
       type: idf
-    version: 5.1.2
-manifest_hash: cf895af9d56c5310cb1a29947fb9dd3eba08704b37120e2fac623e72adfe38e6
+    version: 5.4.0
+  led-strip-service:
+    component_hash: 597ceafb3777cfe86471a70aa712933df0bd661d96e38183fdd6cdea09b6b625
+    dependencies:
+    - name: espressif/led_strip
+      version: '*'
+    - name: idf
+      version: '>=5.3'
+    source:
+      git: git@github.com:darvik80/esp-idf-components.git
+      path: components-cpp/led-strip-service
+      type: git
+    version: 38f738c8a4fbd0707821eb07ae4233f8163d04ca
+direct_dependencies:
+- core-esp32
+- espressif/fmt
+- idf
+- led-strip-service
+manifest_hash: 12175724ae0d404ab55d7f1dac0ddb7def6c53132b12b0de3a20f521862ff3ea
 target: esp32c3
-version: 1.0.0
+version: 2.0.0
