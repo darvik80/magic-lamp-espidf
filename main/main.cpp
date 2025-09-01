@@ -24,7 +24,7 @@ public:
     virtual ~MagicGenerator() = default;
 };
 
-class final StubGenerator : public MagicGenerator {
+class StubGenerator : public MagicGenerator {
     LedColor _color{.red = 0xFF, .green = 0x87, .blue = 0x00};
 public:
     explicit StubGenerator(const LedColor &color = {}) : MagicGenerator(1000), _color(color) {
@@ -39,7 +39,7 @@ public:
     }
 };
 
-class final SingleColorGenerator : public MagicGenerator {
+class SingleColorGenerator : public MagicGenerator {
     LedColor _color;
 public:
     explicit SingleColorGenerator(const LedColor &color) : MagicGenerator(1000), _color(color) {
@@ -53,7 +53,7 @@ public:
 };
 
 
-class final RainbowGenerator : public MagicGenerator {
+class RainbowGenerator : public MagicGenerator {
     size_t _offset{0};
     std::array<LedColor, 4> _shape{};
 public:
