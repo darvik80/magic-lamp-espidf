@@ -1,5 +1,5 @@
 | Supported Targets | ESP32-C3 |
-| ----------------- |----------|
+|-------------------|----------|
 
 # Magic Lamp
 ## Scheme
@@ -50,3 +50,11 @@ Front:
 
 Back:
 {"action-id": 9, "color": "010000"}
+
+## Build issues
+
+### Git permission denied
+```aiignore
+# git config --global credential.helper manager-core
+git config --global core.sshCommand "C:/Windows/System32/OpenSSH/ssh.exe"
+```

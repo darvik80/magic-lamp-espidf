@@ -1,6 +1,6 @@
 dependencies:
   core-esp32:
-    component_hash: d22a1df7f6257f282c68cff0fe7cf3e75d4415bbb9c273bf8820a9b05ac5c647
+    component_hash: 8f48f9227d3516297c1c15ce42941eace67ce2cec31be8d3812dac0aa65fa221
     dependencies:
     - name: idf
       version: '>=5.0'
@@ -22,7 +22,7 @@ dependencies:
       type: service
     version: 10.1.0~1
   espressif/led_strip:
-    component_hash: f907c58f722c58ab8545366668cfd8769cefb7d97a631a14e9d16234cc72bdff
+    component_hash: 223998f10cae6d81f2ad2dd3c1103c2221be298c708e37917482b0153f3ec64e
     dependencies:
     - name: idf
       require: private
@@ -30,13 +30,13 @@ dependencies:
     source:
       registry_url: https://components.espressif.com/
       type: service
-    version: 3.0.0
+    version: 3.0.1~1
   idf:
     source:
       type: idf
-    version: 5.4.0
+    version: 5.5.1
   led-strip-service:
-    component_hash: 597ceafb3777cfe86471a70aa712933df0bd661d96e38183fdd6cdea09b6b625
+    component_hash: 5679db3b7c121c583102955eb6c937a25305875e4db727f2b2de47040e1dd7d8
     dependencies:
     - name: espressif/led_strip
       version: '*'
